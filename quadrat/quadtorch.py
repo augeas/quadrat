@@ -170,6 +170,54 @@ def perturb(bias, coeffs, size, n):
 
     return bias_candidates, coeff_candidates, sg
 
+def perturb_3d(bias, coeff, size, n):
+
+    candidates = tc.zeros(n, 12, dtype=tc.float64)
+    candidates[:, 0:2] = bias.reshape(2)
+    candidates[:, 2:] = coeff.reshape(10)
+
+    pitch = tc.pi * (1 - 2 * tc.rand(1))
+    roll = tc.pi * (1 - 2 * tc.rand(1))
+
+    sin_pitch = tc.sin(pitch)
+    cos_pitch = tc.cos(pitch)
+
+    pitch_mat = tc.zeros((3, 3))
+    pitch_mat[0, 0] = cos_pitch
+    pitch_mat[0, 2] = sin_pitch
+    pitch_mat[1, 1] = 1.0
+    pitch_mat[2, 0] = -sin_pitch
+    pitch_mat[2, 2] = cos_pitch
+
+    cos_roll = tc.cos(roll)
+    sin_roll = tc.sin(roll)
+
+    roll_mat = tc.zeros((3, 3))
+    roll_mat[0, 0] = 1.0
+    roll_mat[1, 1] = cos_roll
+    roll_mat[1, 2] = -sin_roll
+    roll_mat[2, 1] = sin_roll
+    roll_mat[2, 2] = cos_roll
+
+    rot_mat = pitch_mat @ roll_mat
+
+    theta = tc.linspace(-tc.pi, tc.pi, n+1)[:-1]
+
+    grid = tc.zeros((3 , n))
+    grid[0, :] = size * tc.sin(theta)
+    grid[1, :] = size * tc.cos(theta)
+
+    perturb = (rot_mat @ grid).T
+    cols = tc.from_numpy(
+        np.random.choice(np.arange(12), 3, replace=False)
+    )
+    candidates[:, cols] += perturb
+
+    bias_candidates = candidates[:, 0:2].reshape(n, 2, 1)
+    coeff_candidates = candidates[:, 2:].reshape(n, 2, 5)
+
+    return bias_candidates, coeff_candidates, perturb
+
 def dist_tab(points):
     npoints, _ = points.shape
     tab = tc.zeros(npoints, npoints)
@@ -184,11 +232,14 @@ def dist_tab(points):
 def path_dist(perm, dist):
     return dist[perm, tc.roll(perm, 1)]
 
-def eval_seq(bias, coeffs, grid, factor=3.0):
+def eval_seq(bias, coeffs, grid, factor=3.0, three_d=True):
     bias, coeffs, points, dim, lyap = attractor_trial(bias, coeffs)
     pretty = tc.where(is_aesthetic(dim, lyap))[0]
     grid_points = grid[pretty]
-    path = tc.argsort(tc.atan2(grid_points[:, 1], grid_points[:, 0]))
+    if three_d:
+        path = tc.argsort(tc.atan2(grid_points[:, 1], grid_points[:, 0]))
+    else:
+        path = tc.arange(grid_points.shape[0])
     distance_table = dist_tab(grid_points)
     path_distances = path_dist(path, distance_table)
     accepted = (path_distances.max() / path_distances.min()) < factor
@@ -277,7 +328,7 @@ def iter_search(size=2000):
             zip(('name', 'bias', 'coeff', 'points', 'dim', 'lyap'), att)
         ) for att in zip(*batch))
 
-def attractor_seq(n, grid_size=0.0075, grid_points=20, attempts=50):
+def attractor_seq(n, grid_size=0.0075, grid_points=80, attempts=50):
     found = 0
     search = iter_search()
     while found < n:
@@ -285,7 +336,7 @@ def attractor_seq(n, grid_size=0.0075, grid_points=20, attempts=50):
         name = candidate['name']
         print('TRYING: {}'.format(name))
         for i in range(attempts):
-            bias, coeff, grid = perturb(
+            bias, coeff, grid = perturb_3d(
                 candidate['bias'], candidate['coeff'],
                 grid_size, grid_points
             )
