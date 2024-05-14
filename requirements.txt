@@ -6,4 +6,5 @@ notebook
 numpy
 pillow
 scipy
+segno
 torch
