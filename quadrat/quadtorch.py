@@ -4,6 +4,7 @@ import logging
 import os
 import random
 
+from matplotlib import pyplot as plt
 import numpy as np
 from PIL import Image
 from scipy.io import wavfile
@@ -315,10 +316,37 @@ def stagger_segments(segs, hop, wrap=True):
 
     return 2 * (all_samples - s_min) / s_range - 1
 
-def render_img(img, colour=1):
+__primary__ = {
+    'red': [0],
+    'green': [1],
+    'blue': [2],
+    'cyan': [1, 2]
+}
+__cmaps__ = ('viridis', 'plasma', 'inferno', 'magma', 'twilight')
+
+__segmented__ = ('hsv', 'coolwarm', 'cubehelix', 'brg')
+
+def render_img(img, colour='green'):
     root_img = np.cbrt(img.numpy())
-    rendered = np.zeros(img.shape + (3,), dtype=np.uint8)
-    rendered[:,:,colour] = (255 * root_img).astype(np.uint8)
+    if colour in __primary__.keys():
+        rendered = np.zeros(img.shape + (3,), dtype=np.uint8)
+        mono = (255 * root_img).astype(np.uint8)
+        for rgb in __primary__[colour]:
+            rendered[:, :, rgb] = mono
+    elif colour == 'b&w':
+        rendered = (255 - 255 * (root_img > 0)).astype(np.uint8)
+    elif colour in __cmaps__:
+        rgb = (255 * np.array(plt.get_cmap(colour).colors))
+        rendered = rgb[(255 * root_img).astype(np.uint8)].astype(np.uint8)
+    elif colour in __segmented__:
+        col_map = plt.get_cmap(colour)
+        rgb = (
+            np.array(list(map(col_map, np.arange(col_map.N))))[:, :-1] * col_map.N
+        ).astype(np.uint8)
+        rendered = rgb[(col_map.N * root_img).astype(np.uint8)]
+    else:
+        rendered = (255 - 255 * root_img).astype(np.uint8)
+
     return Image.fromarray(rendered)
 
 def iter_search(size=2000):

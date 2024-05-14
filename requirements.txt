@@ -1,0 +1,9 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+jupyterlab
+jupyter-notebookparams
+matplotlib
+notebook
+numpy
+pillow
+scipy
+torch
