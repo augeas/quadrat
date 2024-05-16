@@ -171,14 +171,20 @@ def perturb(bias, coeffs, size, n):
 
     return bias_candidates, coeff_candidates, sg
 
-def perturb_3d(bias, coeff, size, n):
+def perturb_3d(bias, coeff, size, n, pitch=None, roll=None, cols=None):
 
     candidates = tc.zeros(n, 12, dtype=tc.float64)
     candidates[:, 0:2] = bias.reshape(2)
     candidates[:, 2:] = coeff.reshape(10)
 
-    pitch = tc.pi * (1 - 2 * tc.rand(1))
-    roll = tc.pi * (1 - 2 * tc.rand(1))
+    if pitch is None:
+        pitch = tc.pi * (1 - 2 * tc.rand(1))
+    else:
+        pitch = tc.tensor(pitch)
+    if roll is None:
+        roll = tc.pi * (1 - 2 * tc.rand(1))
+    else:
+        roll = tc.tensor(roll)
 
     sin_pitch = tc.sin(pitch)
     cos_pitch = tc.cos(pitch)
@@ -209,15 +215,24 @@ def perturb_3d(bias, coeff, size, n):
     grid[1, :] = size * tc.cos(theta)
 
     perturb = (rot_mat @ grid).T
-    cols = tc.from_numpy(
-        np.random.choice(np.arange(12), 3, replace=False)
-    )
+    if cols is None:
+        cols = tc.from_numpy(
+            np.random.choice(np.arange(12), 3, replace=False)
+        )
+    else:
+        cols = tc.tensor(cols)
     candidates[:, cols] += perturb
 
     bias_candidates = candidates[:, 0:2].reshape(n, 2, 1)
     coeff_candidates = candidates[:, 2:].reshape(n, 2, 5)
 
-    return bias_candidates, coeff_candidates, perturb
+    meta = {
+        'size': size, 'n': n,
+        'pitch': float(pitch), 'roll': float(roll),
+        'cols': cols.tolist()
+    }
+
+    return bias_candidates, coeff_candidates, perturb, meta
 
 def dist_tab(points):
     npoints, _ = points.shape
@@ -356,15 +371,15 @@ def iter_search(size=2000):
             zip(('name', 'bias', 'coeff', 'points', 'dim', 'lyap'), att)
         ) for att in zip(*batch))
 
-def attractor_seq(n, grid_size=0.0075, grid_points=80, attempts=50):
+def attractor_seq(n, grid_size=0.0075, grid_points=80, attempts=50, batch=2000):
     found = 0
-    search = iter_search()
+    search = iter_search(batch)
     while found < n:
         candidate = search.__next__()
         name = candidate['name']
         print('TRYING: {}'.format(name))
         for i in range(attempts):
-            bias, coeff, grid = perturb_3d(
+            bias, coeff, grid, meta = perturb_3d(
                 candidate['bias'], candidate['coeff'],
                 grid_size, grid_points
             )
@@ -380,8 +395,11 @@ def attractor_seq(n, grid_size=0.0075, grid_points=80, attempts=50):
             yield {
                 'name': name,
                 'bias': seq[0], 'coeff': seq[1], 'points': seq[2],
-                'dim': candidate['dim'], 'lyap': candidate['lyap']
+                'dim': candidate['dim'], 'lyap': candidate['lyap'],
+                'meta': meta
             }
+
+
 
 def render_video(
     seq, img_size=800, img_points=400000, fft_size=8192, hop_size=2048, fft_points=64, max_dur=None
@@ -420,6 +438,7 @@ def render_video(
         jfile.write(json.dumps({
             **{'name': name},
             **{k: seq[k].tolist() for k in ('bias', 'coeff')},
-            **{k: float(seq[k]) for k in ('dim', 'lyap')}
+            **{k: float(seq.get(k)) for k in ('dim', 'lyap')},
+            **seq['meta']
         }))
 
