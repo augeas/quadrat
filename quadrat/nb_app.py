@@ -204,9 +204,17 @@ class SingleImageApp(object):
             display(Audio(filename=self.audio_file, rate=441000))
         self.toggle_controls(False)
 
-    def show(self):
+    def show(self, auto=True):
         display(self.box)
         if self.name:
             self.toggle_controls()
             self.update_image()
+            if auto:
+                self.build_audio(None)
+            self.toggle_controls(False)
+        else:
+            self.toggle_controls()
+            self.new_image(None)
+            if auto:
+                self.build_audio(None)
             self.toggle_controls(False)
