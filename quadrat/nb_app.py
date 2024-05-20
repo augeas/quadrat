@@ -111,7 +111,8 @@ def render_track(inflated_img, fft_size=8192, hop_size=2048, fft_points=512):
     return proc_args[-1]
 
 class SingleImageApp(object):
-    def __init__(self, name=None, size=600, fft_size=8192, hop_fraction=4, fft_points=1024):
+    def __init__(self, name=None, size=600, fft_size=8192, hop_fraction=4,
+        fft_points=1024, player=False):
 
         self.image_name = widgets.HTML()
         self.search_button = widgets.Button(description='new image')
@@ -144,6 +145,7 @@ class SingleImageApp(object):
             self.fft_size_box, self.hop_size_box, self.points_box, self.audio_button
         ])
 
+        self.player = player
         self.audio_download_box = widgets.Output()
         self.audio_play_box = widgets.Output()
         self.audio_outputs_box = widgets.HBox([
@@ -227,7 +229,8 @@ class SingleImageApp(object):
     def build_audio(self, _):
         self.toggle_controls()
         self.audio_download_box.clear_output()
-        self.audio_play_box.clear_output()
+        if self.player:
+            self.audio_play_box.clear_output()
         self.audio_file = render_track(self.image,
             fft_size = self.fft_size_box.value,
             hop_size = self.fft_size_box.value // self.hop_size_box.value,
@@ -235,8 +238,9 @@ class SingleImageApp(object):
         )
         with self.audio_download_box:
             display(FileLink(self.audio_file))
-        with self.audio_play_box:
-            display(Audio(filename=self.audio_file, rate=441000))
+        if self.player:
+            with self.audio_play_box:
+                display(Audio(filename=self.audio_file, rate=441000))
         self.toggle_controls(False)
 
     def show(self, auto=True):

@@ -21,7 +21,7 @@ def init_var(size, x=0.05, y=0.05):
 
 def var_vec(var):
     size = var.shape[0]
-    vec = tc.zeros(size, 5, 1)
+    vec = tc.zeros(size, 5, 1, dtype=tc.float64)
     vec[:, 1:, :] = (var * var.reshape(size, 1, 2)).reshape(size, 4, 1)
     vec[:, 0, :] = var[:, 0]
     vec[:, 3, :] = var[:, 1]
