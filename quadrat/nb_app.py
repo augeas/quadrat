@@ -34,11 +34,11 @@ def inflate_img(name, size=500, points=200000):
     shape = (size, size)
     trial = quadtorch.attractor_trial(bias, coeff)
     if 0 in trial[2].shape:
-        points = None
+        prev = None
     else:
-        points = trial[2]
+        prev = trial[2]
     points = quadtorch.attractor_points(
-        bias, coeff, n_points=points, prev_points=points
+        bias, coeff, n_points=points, prev_points=prev
     )
     img, minima, ranges = quadtorch.attractor_img(points, shape, common=False)
     seq = quadtorch.img_seq(points, shape, minima, ranges)
