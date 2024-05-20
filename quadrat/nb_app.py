@@ -34,7 +34,7 @@ def inflate_img(name, size=500, points=200000):
     shape = (size, size)
     trial = quadtorch.attractor_trial(bias, coeff)
     if 0 in trial[2].shape:
-        prev = None
+        return None
     else:
         prev = trial[2]
     points = quadtorch.attractor_points(
@@ -169,6 +169,9 @@ class SingleImageApp(object):
             self.image = inflate_img(
                 self.name, size=self.image_size, points=self.image_points
             )
+        if self.image is None:
+            self.image_name.value = '<h2>no attractor</h2>'
+            return None
         self.image_meta.value = '''
             <table>
                 <tr>
@@ -193,6 +196,7 @@ class SingleImageApp(object):
         except:
             pass
         img.save('/'.join((self.name, '{}.png'.format(self.name))))
+        return True
 
     def new_image(self, _):
         self.toggle_controls()
@@ -248,12 +252,12 @@ class SingleImageApp(object):
         if self.name:
             self.toggle_controls()
             self.update_image()
-            if auto:
+            if auto and self.image:
                 self.build_audio(None)
             self.toggle_controls(False)
         else:
             self.toggle_controls()
             self.new_image(None)
-            if auto:
+            if auto and self.image:
                 self.build_audio(None)
             self.toggle_controls(False)
