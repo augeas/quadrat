@@ -1,5 +1,6 @@
 
 import os
+import subprocess
 
 import ipywidgets as widgets
 from IPython.display import display, Audio, FileLink
@@ -8,7 +9,6 @@ from scipy.io import wavfile
 import torch as tc
 
 from . import quadtorch
-
 
 def inflate_seq(name, size, n, pitch, roll, cols):
     bias, coeff = quadtorch.str2coeffs([name])
@@ -33,8 +33,12 @@ def inflate_img(name, size=500, points=200000):
     bias, coeff = quadtorch.str2coeffs([name])
     shape = (size, size)
     trial = quadtorch.attractor_trial(bias, coeff)
+    if 0 in trial[2].shape:
+        points = None
+    else:
+        points = trial[2]
     points = quadtorch.attractor_points(
-        bias, coeff, n_points=points, prev_points=trial[2]
+        bias, coeff, n_points=points, prev_points=points
     )
     img, minima, ranges = quadtorch.attractor_img(points, shape, common=False)
     seq = quadtorch.img_seq(points, shape, minima, ranges)
@@ -43,6 +47,26 @@ def inflate_img(name, size=500, points=200000):
         'name': name, 'img': img, 'seq': seq,
         'dim': float(trial[-2][0]), 'lyap': float(trial[-1][0])
     }
+
+__ffmpeg_args__ = [
+    'ffmpeg',
+    '-y',
+    '-i',
+    'NAME/NAME.wav',
+    '-i',
+    'NAME/NAME.png',
+    '-map',
+    '0:0',
+    '-map',
+    '1:0',
+    '-id3v2_version',
+    '3',
+    '-metadata:s:v',
+    'title="Album cover"',
+    '-metadata:s:v',
+    'comment="Cover (front)"',
+    'NAME/NAME.mp3'
+]
 
 def render_track(inflated_img, fft_size=8192, hop_size=2048, fft_points=512):
     window = tc.blackman_window(fft_size)
@@ -76,8 +100,15 @@ def render_track(inflated_img, fft_size=8192, hop_size=2048, fft_points=512):
         name.join(('./', '/','.wav')), 44100, audio
     )
 
+    proc_args = __ffmpeg_args__.copy()
+    for arg in (3, 5, -1):
+        proc_args[arg] = proc_args[arg].replace('NAME', name)
+    out = subprocess.run(
+        proc_args, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+    )
+
     #return ((0.5 + audio.T / 2) * 65535).astype(np.uint16)
-    return fname
+    return proc_args[-1]
 
 class SingleImageApp(object):
     def __init__(self, name=None, size=600, fft_size=8192, hop_fraction=4, fft_points=1024):
@@ -148,14 +179,18 @@ class SingleImageApp(object):
         '''.format(self.image['dim'], self.image['lyap'])
 
         self.image_box.clear_output()
-        with self.image_box:
-            display(
-                quadtorch.render_img(
-                    self.image['img'].reshape(
-                        self.image_size, self.image_size
-                    )
-                )
+        img = quadtorch.render_img(
+            self.image['img'].reshape(
+                self.image_size, self.image_size
             )
+        )
+        with self.image_box:
+            display(img)
+        try:
+            os.mkdir(self.name)
+        except:
+            pass
+        img.save('/'.join((self.name, '{}.png'.format(self.name))))
 
     def new_image(self, _):
         self.toggle_controls()
@@ -165,8 +200,8 @@ class SingleImageApp(object):
         points = quadtorch.attractor_points(
             search_result['bias'].reshape(1, 2, 1),
             search_result['coeff'].reshape(1, 2, 5),
-            n_points=self.image_points,
-            prev_points=None
+            n_points = self.image_points,
+            prev_points = search_result['points']
         )
         shape = (self.image_size, self.image_size)
         img, minima, ranges = quadtorch.attractor_img(

@@ -367,9 +367,16 @@ def render_img(img, colour='green'):
 def iter_search(size=2000):
     while True:
         batch = search_batch(size)
-        yield from (dict(
-            zip(('name', 'bias', 'coeff', 'points', 'dim', 'lyap'), att)
-        ) for att in zip(*batch))
+        attractors = batch[0:3] + batch[4:]
+        points = batch[3]
+        npoints = points.shape[0]
+        yield from (
+            {
+                **dict(zip(('name', 'bias', 'coeff', 'dim', 'lyap'), att)),
+                **{'points': points[:, i].reshape(npoints, 1, 2, 1)}
+            }
+            for i, att in enumerate(zip(*attractors))
+        )
 
 def attractor_seq(n, grid_size=0.0075, grid_points=80, attempts=50, batch=2000):
     found = 0
