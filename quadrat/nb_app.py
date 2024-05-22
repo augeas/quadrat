@@ -115,16 +115,21 @@ def render_track(inflated_img, fft_size=8192, hop_size=2048, fft_points=512):
 
 class SingleImageApp(object):
     def __init__(self, name=None, size=600, fft_size=8192, hop_fraction=4,
-        fft_points=1024, player=False):
+        fft_points=1024, player=False, mobile=False):
 
         self.image_name = widgets.HTML()
         self.search_button = widgets.Button(description='new image')
         self.search_button.on_click(self.new_image)
         self.image_id_box = widgets.VBox([self.image_name, self.search_button])
         self.image_meta = widgets.HTML(layout = widgets.Layout(width='400px'))
-        self.image_info = widgets.HBox([
-            self.image_id_box, self.image_meta
-        ])
+        if not mobile:
+            self.image_info = widgets.HBox([
+                self.image_id_box, self.image_meta
+            ])
+        else:
+            self.image_info = widgets.VBox([
+                self.image_id_box, self.image_meta
+            ])
 
         self.image_box = widgets.Output()
         self.fft_size_box = widgets.Dropdown(
@@ -144,19 +149,36 @@ class SingleImageApp(object):
         )
         self.audio_button = widgets.Button(description='build audio')
         self.audio_button.on_click(self.build_audio)
-        self.audio_inputs_box = widgets.HBox([
-            self.fft_size_box, self.hop_size_box, self.points_box, self.audio_button
-        ])
+        if not mobile:
+            self.audio_inputs_box = widgets.HBox([
+                self.fft_size_box, self.hop_size_box,
+                self.points_box, self.audio_button
+            ])
+        else:
+            self.audio_inputs_box = widgets.VBox([
+                self.fft_size_box, self.hop_size_box,
+                self.points_box, self.audio_button
+            ])
 
         self.player = player
         self.audio_download_box = widgets.Output()
         self.audio_play_box = widgets.Output()
-        self.audio_outputs_box = widgets.HBox([
-            self.audio_play_box, self.audio_download_box
-        ])
+        if not mobile:
+            self.audio_outputs_box = widgets.HBox([
+                self.audio_play_box, self.audio_download_box
+            ])
+        else:
+            self.audio_outputs_box = widgets.VBox([
+                self.audio_download_box, self.audio_play_box
+            ])
 
-        self.box = widgets.VBox([
-            self.image_info, self.audio_inputs_box, self.audio_outputs_box, self.image_box
+
+        self.box = widgets.HBox([
+            widgets.VBox([
+                self.image_info, self.audio_outputs_box,
+                self.audio_inputs_box
+            ]),
+            self.image_box
         ])
 
         self.name = name
@@ -167,13 +189,13 @@ class SingleImageApp(object):
         self.audio_file = None
 
     def update_image(self):
-        self.image_name.value = '<h2>{}</h2>'.format(self.name)
+        self.image_name.value = '<h3>{}</h3>'.format(self.name)
         if self.image is None:
             self.image = inflate_img(
                 self.name, size=self.image_size, points=self.image_points
             )
         if self.image is None:
-            self.image_name.value = '<h2>no attractor</h2>'
+            self.image_name.value = '<h3>no attractor</h3>'
             return None
         self.image_meta.value = '''
             <table>
@@ -203,7 +225,7 @@ class SingleImageApp(object):
 
     def new_image(self, _):
         self.toggle_controls()
-        self.image_name.value = '<h2>searching</h2>'
+        self.image_name.value = '<h3>searching</h3>'
         search_result = self.search.__next__()
         self.name = search_result['name']
         points = quadtorch.attractor_points(
