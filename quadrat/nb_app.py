@@ -29,7 +29,7 @@ def inflate_seq(name, size, n, pitch, roll, cols):
         }
     }
 
-def inflate_img(name, size=500, points=200000):
+def inflate_img(name, size=500, points=200000, sequence=True):
     bias, coeff = quadtorch.str2coeffs([name])
     shape = (size, size)
     trial = quadtorch.attractor_trial(bias, coeff)
@@ -41,7 +41,10 @@ def inflate_img(name, size=500, points=200000):
         bias, coeff, n_points=points, prev_points=prev
     )
     img, minima, ranges = quadtorch.attractor_img(points, shape, common=False)
-    seq = quadtorch.img_seq(points, shape, minima, ranges)
+    if sequence:
+        seq = quadtorch.img_seq(points, shape, minima, ranges)
+    else:
+        seq = None
 
     return {
         'name': name, 'img': img, 'seq': seq,
