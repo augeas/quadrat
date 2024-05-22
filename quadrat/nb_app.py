@@ -172,14 +172,19 @@ class SingleImageApp(object):
                 self.audio_download_box, self.audio_play_box
             ])
 
-
-        self.box = widgets.HBox([
-            widgets.VBox([
+        if not mobile:
+            self.box = widgets.HBox([
+                widgets.VBox([
+                    self.image_info, self.audio_outputs_box,
+                    self.audio_inputs_box
+                ]),
+                self.image_box
+            ])
+        else:
+            self.box = widgets.VBox([
                 self.image_info, self.audio_outputs_box,
-                self.audio_inputs_box
-            ]),
-            self.image_box
-        ])
+                self.image_box, self.audio_inputs_box
+            ])
 
         self.name = name
         self.image_size = size

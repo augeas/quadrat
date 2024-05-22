@@ -44,7 +44,7 @@ def expand_text(text, font_path, width, size=5, incr=5, margin=50):
 def centre(box, width):
     return (width // 2) - box[3] // 2
 
-def qr_sticker(name, prefix, suffix, font_path, width=640, margin=20, dest='binder_image'):
+def qr_sticker(name, prefix, suffix, font_path, width=600, margin=40, dest='binder_image'):
     inflated = inflate_img(name, size=width, points=int(0.5 * width * width))
     if inflated is None:
         return None
