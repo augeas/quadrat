@@ -113,6 +113,26 @@ def render_track(inflated_img, fft_size=8192, hop_size=2048, fft_points=512):
     #return ((0.5 + audio.T / 2) * 65535).astype(np.uint16)
     return proc_args[-1]
 
+def inflate_search(result, size, n_points):
+    name = result['name']
+    points = quadtorch.attractor_points(
+        result['bias'].reshape(1, 2, 1),
+        result['coeff'].reshape(1, 2, 5),
+        n_points = n_points,
+        prev_points = result['points']
+    )
+    shape = (size, size)
+    img, minima, ranges = quadtorch.attractor_img(
+        points, shape, common=False
+    )
+    seq = quadtorch.img_seq(points, shape, minima, ranges)
+
+    return {
+        'name': name, 'img': img, 'seq': seq,
+        'dim': result['dim'].item(),
+        'lyap': result['lyap'].item()
+    }
+
 class SingleImageApp(object):
     def __init__(self, name=None, size=600, fft_size=8192, hop_fraction=4,
         fft_points=1024, player=False, mobile=False):
