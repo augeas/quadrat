@@ -1,14 +1,20 @@
 
 import io
 from itertools import chain
+import os
 
 from PIL import Image, ImageDraw, ImageFont
 import segno
 
-from .nb_app import inflate_img
+from .nb_app import inflate_img, inflate_search
 from .quadtorch import render_img
 
 __font_path__ = '/'.join(__file__.split('/')[:-1]) + '/fonts'
+
+__fonts__ = {
+    fnt.rstrip('.ttf'): '/'.join((__font_path__, fnt))
+    for fnt in os.listdir(__font_path__)
+}
 
 __url_templates__ = {
     'binder_image': (
@@ -84,4 +90,42 @@ def qr_sticker(name, prefix, suffix, font_path, width=600, margin=40, dest='bind
         y_off += dim[4]
     image.paste(code_img, (margin, y_off))
     return image
+
+def empty_corners(image, w, h):
+    img = image.T
+    corners = {
+        'bottom_left': img[0:w, -h:],
+        'bottom_right': img[-w:, -h:],
+        'top_left': img[0:w, 0:h],
+        'top_right': img[-w:, 0:h]
+    }
+    return [pos for pos, box in corners.items() if box.sum() == 0]
+
+def sticker(res, size=282, border=26, colour='green', font='Swansea-q3pd', font_size=12):
+    im_size = size - 2 * border
+    image = inflate_search(res, im_size, int(0.5 * im_size * im_size), sequence=False)
+    im_font = ImageFont.truetype(__fonts__[font], size=font_size)
+    w, h = im_font.getbbox(image['name'])[-2:]
+    pad_w = w + 2
+    pad_h = h + 2
+    pos = empty_corners(image['img'], pad_w, pad_h)
+    if not pos:
+        return None
+    if pos[0].startswith('bottom'):
+        y_off = im_size - h - 1
+    else:
+        y_off = 1
+    if pos[0].endswith('left'):
+        x_off = 1
+    else:
+        x_off = im_size - w - 1
+    rendered = render_img(image['img'], colour=colour)
+    if colour in ('red', 'green', 'blue', 'cyan'):
+        fill = colour
+    draw = ImageDraw.Draw(rendered)
+    draw.text((x_off, y_off), image['name'], fill=fill, font=im_font)
+    final = Image.new("RGB", (size, size), 'black')
+    final.paste(rendered, (border, border))
+    return final
+
 
