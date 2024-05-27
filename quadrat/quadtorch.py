@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import random
+import subprocess
 
 from matplotlib import pyplot as plt
 import numpy as np
@@ -378,7 +379,7 @@ def iter_search(size=2000):
             for i, att in enumerate(zip(*attractors))
         )
 
-def attractor_seq(n, grid_size=0.0075, grid_points=80, attempts=50, batch=2000):
+def attractor_seq(n, grid_size=0.0075, grid_points=80, attempts=10, batch=2000):
     found = 0
     search = iter_search(batch)
     while found < n:
@@ -406,11 +407,28 @@ def attractor_seq(n, grid_size=0.0075, grid_points=80, attempts=50, batch=2000):
                 'meta': meta
             }
 
-
+__ffmpeg_args__ = [
+    'ffmpeg',
+    '-framerate',
+    'FRAMERATE',
+    '-pattern_type',
+    'glob',
+    '-loop',
+    '1',
+    '-i',
+    '"NAME/*.png"',
+    '-c:v',
+    'h264',
+    '-i',
+    '"NAME/NAME.wav"',
+    '-c:a',
+    'aac',
+    '-shortest',
+    '"NAME/NAME.mp4"'
+]
 
 def render_video(
-    seq, img_size=800, img_points=400000, fft_size=8192, hop_size=2048, fft_points=64, max_dur=None
-):
+    seq, img_size=800, img_points=400000, fft_size=8192, hop_size=2048, fft_points=64, skip=1):
     all_points = attractor_points(
         seq['bias'], seq['coeff'], n_points=img_points, prev_points=seq['points']
     )
@@ -419,15 +437,20 @@ def render_video(
 
     images, minima, ranges = attractor_img(all_points, img_dim)
 
-    point_seqs = img_seq(all_points[0:fft_points], img_dim, minima, ranges)
+    skip_images = images[::skip]
+
+    point_seqs = img_seq(all_points[:fft_points, ::skip], img_dim, minima[::skip], ranges[::skip])
     n_attract = point_seqs.shape[1]
 
     window = tc.blackman_window(fft_size)
 
     all_segs = tc.zeros(fft_points, n_attract, fft_size, 2)
+    all_segs[:, :, :, 0] = fft_segments(spectra_seq(skip_images, point_seqs), window)
+    all_segs[:, :, :, 1] = fft_segments(spectra_seq(skip_images.mT, point_seqs), window)
 
-    all_segs[:, :, :, 0] = fft_segments(spectra_seq(images, point_seqs), window)
-    all_segs[:, :, :, 1] = fft_segments(spectra_seq(images.mT, point_seqs), window)
+    duration = (fft_points * n_attract * hop_size + fft_size - hop_size) / 44100
+
+    framerate = n_attract / duration
 
     name = seq['name']
     os.mkdir(name)
@@ -449,3 +472,14 @@ def render_video(
             **seq['meta']
         }))
 
+    proc_args = __ffmpeg_args__.copy()
+    for arg in (8, 12, -1):
+        proc_args[arg] = proc_args[arg].replace('NAME', name)
+    proc_args[2] = str(framerate)
+
+    out = subprocess.run(
+        ' '.join(proc_args), stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
+        shell=True
+    )
+
+    return proc_args[-1][1:-1]
