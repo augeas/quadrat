@@ -37,12 +37,12 @@ def inflate_img(name, size=500, points=200000, sequence=True):
         return None
     else:
         prev = trial[2]
-    points = quadtorch.attractor_points(
+    img_points = quadtorch.attractor_points(
         bias, coeff, n_points=points, prev_points=prev
     )
-    img, minima, ranges = quadtorch.attractor_img(points, shape, common=False)
+    img, minima, ranges = quadtorch.attractor_img(img_points, shape, common=False)
     if sequence:
-        seq = quadtorch.img_seq(points, shape, minima, ranges)
+        seq = quadtorch.img_seq(img_points, shape, minima, ranges)
     else:
         seq = None
 
@@ -135,6 +135,25 @@ def inflate_search(result, size, n_points, sequence=True):
         'dim': result['dim'].item(),
         'lyap': result['lyap'].item()
     }
+
+
+def nb_image_render(name, size):
+    image = inflate_img(name, size=size, points=int(size * size * 0.625))
+    png = quadtorch.render_img(image['img'].reshape(size, size))
+    display(png)
+    try:
+        os.mkdir(name)
+    except:
+        pass
+    png.save('/'.join((name, '{}.png'.format(name))))
+    return image
+
+def nb_audio_render(image, fft_size, hop_size, fft_points):
+    audio_file = render_track(image, fft_size=fft_size, hop_size=hop_size, fft_points=fft_points)
+    display(FileLink(audio_file))
+    display(Audio(filename=audio_file, rate=441000))
+    print('Lyapunov exponent: {}'.format(image['lyap']))
+    print('correlation dimension: {}'.format(image['dim']))
 
 class SingleImageApp(object):
     def __init__(self, name=None, size=600, fft_size=8192, hop_fraction=4,

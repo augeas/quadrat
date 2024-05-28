@@ -33,6 +33,44 @@ def_suffix = [
     'SOUND LIKE?'
 ]
 
+alt_text = [
+    (
+        [
+            'INDUSTRIAL',
+            'NOISE DADA'
+        ],
+        [
+            'DADA SCIENCE',
+            'MACHINE IGNORANCE'
+        ]
+    ),
+    (
+        [
+            'SOME THOUGHTS HAVE A',
+            'CERTAIN SOUND, THAT',
+            'BEING THE EQUIVALENT',
+            'TO A FORM.'
+        ],
+        [
+            'THIS IS PART OF THE WEIRDING',
+            'WAY THAT WE WILL TEACH YOU.'
+        ]
+    ),
+    (
+        [
+            'EQUATION WISE,',
+            'THE FIRST THING TO DO',
+            'IS TO CONSIDER TIME AS',
+            'OFFICIALLY ENDED.'
+        ],
+        [
+            'WE WORK ON THE OTHER',
+            'SIDE OF TIME'
+        ]
+    )
+]
+
+
 def expand_text(text, font_path, width, size=5, incr=5, margin=50):
     font_size = size
     box = (0, 0, 0, 0)
@@ -50,7 +88,7 @@ def expand_text(text, font_path, width, size=5, incr=5, margin=50):
 def centre(box, width):
     return (width // 2) - box[3] // 2
 
-def qr_sticker(name, prefix, suffix, font_path, width=600, margin=40, dest='binder_image'):
+def qr_sticker(name, prefix, suffix, font_path, footer = [], width=600, margin=40, dest='binder_image'):
     inflated = inflate_img(name, size=width, points=int(0.5 * width * width))
     if inflated is None:
         return None
@@ -65,10 +103,15 @@ def qr_sticker(name, prefix, suffix, font_path, width=600, margin=40, dest='bind
     code_height = code_img.size[1]
     prefix_dims = [expand_text(txt, font_path, width) for txt in prefix]
     suffix_dims = [expand_text(txt, font_path, width) for txt in suffix]
+    footer_dims = [expand_text(txt, font_path, width) for txt in footer]
+    if footer:
+        footer_height = sum([dim[4] for dim in footer_dims])
+    else:
+        footer_height = 0
     name_dims = expand_text(name, font_path, width)
     prefix_height = sum([dim[4] for dim in prefix_dims])
     suffix_height = sum([dim[4] for dim in suffix_dims])
-    text_height = prefix_height + name_dims[4] + suffix_height
+    text_height = prefix_height + name_dims[4] + suffix_height + footer_height
     total_height = text_height + code_height + width
     image = Image.new("RGB", (width + margin, total_height), "white")
     draw = ImageDraw.Draw(image)
@@ -89,6 +132,13 @@ def qr_sticker(name, prefix, suffix, font_path, width=600, margin=40, dest='bind
         draw.text((margin + x_off, y_off), txt, fill='black', font=font)
         y_off += dim[4]
     image.paste(code_img, (margin, y_off))
+    if footer:
+        y_off += code_height
+        for txt, dim in zip(footer, footer_dims):
+            font = ImageFont.truetype(font_path, size=dim[0])
+            x_off = centre(dim, width)
+            draw.text((margin + x_off, y_off), txt, fill='black', font=font)
+            y_off += dim[4]
     return image
 
 def empty_corners(image, w, h):

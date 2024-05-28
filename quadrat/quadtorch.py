@@ -50,6 +50,17 @@ def str2coeffs(names):
 
     return bias, coeffs
 
+def float2char(f):
+    return chr(65 + round((f + 1.2) / 0.1))
+
+def coeffs2str(bias, coeff):
+    dim = bias.shape[0]
+    bias_coeff = tc.zeros(dim, 2, 6, dtype=tc.float64)
+    bias_coeff[:, :, 0] = bias.reshape(dim, 2)
+    bias_coeff[:, :, 1:] = coeff
+    flat = bias_coeff.reshape(dim, 12)
+    return [''.join(map(float2char, att.tolist())) for att in flat]
+
 N2 = 0.5 * 0.5
 N1 = 0.05 * 0.05
 
@@ -144,7 +155,8 @@ def search_batch(size):
     bias, coeff = str2coeffs(names)
     bias, coeff, points, dim, lyap = attractor_trial(bias, coeff)
     pretty = tc.where(is_aesthetic(dim, lyap))[0]
-    found = [names[i] for i in pretty]
+    #found = [names[i] for i in pretty]
+    found = coeffs2str(bias[pretty], coeff[pretty])
     return (found, bias[pretty], coeff[pretty], points[:, pretty],
         dim[pretty], lyap[pretty])
 
