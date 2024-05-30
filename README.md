@@ -15,10 +15,12 @@ However, one would prefer to consider this as the vectrorized operation:
 $$
 \Large{P_{n+1} = B + CV_{n}}
 $$
+
 $$
 \Large{P_{n+1} = \begin{bmatrix} x_{n}+1 \\ y_{n}+1 \end{bmatrix}, B =  \begin{bmatrix} a_{1} \\ a_{7} \end{bmatrix}}, C =  \left[ \begin{array}{ccccccc} a_{2} & a_{3} & a_{4} & a_{5} & a_{6} \\
 a_{8} & a_{9} & a_{10} & a_{11} & a_{12} \end{array} \right]
 $$
+
 $$
 \Large{V_{n} = \begin{bmatrix} x_{n} \\ x_{n}^{2} \\ x_{n}y_{n} \\ y_{n} \\ y_{n}^{2} \\  \end{bmatrix}}
 $$
