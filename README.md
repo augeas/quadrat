@@ -16,7 +16,7 @@ $$
 \Large{P_{n+1} = B + CV_{n}}
 $$
 $$
-\Large{P_{n+1} =   \begin{bmatrix} x_{n}+1 \\ y_{n}+1 \end{bmatrix}, B =  \begin{bmatrix} a_{1} \\ a_{7} \end{bmatrix}}, C =  \left[ \begin{array}{ccccccc} a_{2} & a_{3} & a_{4} & a_{5} & a_{6} \\
+\Large{P_{n+1} = \begin{bmatrix} x_{n}+1 \\ y_{n}+1 \end{bmatrix}, B =  \begin{bmatrix} a_{1} \\ a_{7} \end{bmatrix}}, C =  \left[ \begin{array}{ccccccc} a_{2} & a_{3} & a_{4} & a_{5} & a_{6} \\
 a_{8} & a_{9} & a_{10} & a_{11} & a_{12} \end{array} \right]
 $$
 $$
@@ -29,6 +29,6 @@ Lyapunov exponent and Correlation dimension lie within a certain range. Random s
 where values from -1.2 to 1.2 in increments of 0.1 are assigned a letter from `A` to `Y`. The point sequences are
 made into images by taking a histogram, so that points visited more frequently are brighter. Thus, a `SDUUCQUXQXDK` is:
 
-![SDUUCQUXQXDK][img/SDUUCQUXQXDK.png]
+![SDUUCQUXQXDK](img/SDUUCQUXQXDK.png)
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/augeas/quadrat/main?urlpath=https%3A%2F%2Fgithub.com%2Faugeas%2Fquadrat%2Fblob%2Fmain%2Fvideos.ipynb)
