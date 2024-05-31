@@ -138,7 +138,11 @@ def inflate_search(result, size, n_points, sequence=True):
 
 
 def nb_image_render(name, size):
-    image = inflate_img(name, size=size, points=int(size * size * 0.625))
+    if name:
+        print('Trying to draw a {}...'.format(name))
+        image = inflate_img(name, size=size, points=int(size * size * 0.625))
+    else:
+        pass
     png = quadtorch.render_img(image['img'].reshape(size, size))
     display(png)
     try:
@@ -149,6 +153,7 @@ def nb_image_render(name, size):
     return image
 
 def nb_audio_render(image, fft_size, hop_size, fft_points):
+    print('Making noises...')
     audio_file = render_track(image, fft_size=fft_size, hop_size=hop_size, fft_points=fft_points)
     display(FileLink(audio_file))
     display(Audio(filename=audio_file, rate=441000))

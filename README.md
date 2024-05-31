@@ -27,10 +27,21 @@ $$
 
 In this way, attractors for many sets of coefficients can be iterated at once, using multi-dimensional numpy arrays
 or torch tensors. If a secquence of points doesn't diverge, it is considered aesthetic if its
-Lyapunov exponent and Correlation dimension lie within a certain range. Random searches of coefficients are performed,
+[Lyapunov exponent](https://en.wikipedia.org/wiki/Lyapunov_exponent) and
+[Correlation dimension](https://en.wikipedia.org/wiki/Correlation_dimension) lie within a
+certain range. Random searches of coefficients are performed,
 where values from -1.2 to 1.2 in increments of 0.1 are assigned a letter from `A` to `Y`. The point sequences are
 made into images by taking a histogram, so that points visited more frequently are brighter. Thus, a `SDUUCQUXQXDK` is:
 
 ![SDUUCQUXQXDK](img/SDUUCQUXQXDK.png)
+
+## Making Sounds
+
+The row and column of the histogram for each point in the sequence are considered as the real and imaginary
+parts of one half of a complex spectrum, with the other half found by reflecting and taking the complex conjugate.
+In this way, taking the inverse Fast Fourier Transform results in a real signal. The signals for each point
+are multiplied by a [window function](https://en.wikipedia.org/wiki/Window_function), shifted by a series of
+overlapping hops, and then summed and normalized. This is repeated for a second audio channel with the rows and
+columns swapped.
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/augeas/quadrat/main?urlpath=https%3A%2F%2Fgithub.com%2Faugeas%2Fquadrat%2Fblob%2Fmain%2Fvideos.ipynb)
