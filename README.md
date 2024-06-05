@@ -2,7 +2,7 @@
 Sounds and moving pictures from quadratic difference equations.
 
 ### TLDR: Click the button to make random pictures and noises on [mybinder.org](https://mybinder.org/).
-[![Make Noises](img/make_noises.png)](https://mybinder.org/v2/gh/augeas/quadrat/main?urlpath=https%3A%2F%2Fgithub.com%2Faugeas%2Fquadrat%2Fblob%2Fmain%2Fimage.ipynb)
+[![Make Noises](img/make_noises.png)](https://mybinder.org/v2/gh/augeas/quadrat/main?urlpath=notebooks%2Fimage.ipynb%3F%26autorun%3Dtrue)
 
 In 1993, J. C. Sprott published [Automatic Generation of Strange Attractors](https://sprott.physics.wisc.edu/pubs/PAPER203.HTM), where chaotic maps are produced by iterating a reccurrence relation given by a pair of coupled quadratic difference equations:
 
@@ -47,4 +47,4 @@ are multiplied by a [window function](https://en.wikipedia.org/wiki/Window_funct
 overlapping hops, and then summed and normalized. This is repeated for a second audio channel with the rows and
 columns swapped.
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/augeas/quadrat/main?urlpath=https%3A%2F%2Fgithub.com%2Faugeas%2Fquadrat%2Fblob%2Fmain%2Fvideos.ipynb)
+### [This](SDUUCQUXQXDK.mp3) is what a `SDUUCQUXQXDK` sounds like.
