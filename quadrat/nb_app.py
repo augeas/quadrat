@@ -136,13 +136,18 @@ def inflate_search(result, size, n_points, sequence=True):
         'lyap': result['lyap'].item()
     }
 
-
 def nb_image_render(name, size):
+    n_points = int(size * size * 0.625)
     if name:
         print('Trying to draw a {}...'.format(name))
-        image = inflate_img(name, size=size, points=int(size * size * 0.625))
+        image = inflate_img(name, size=size, points=n_points)
     else:
-        pass
+        search = quadtorch.iter_search(500)
+        print('searching...')
+        image = inflate_search(search.__next__(), size, n_points)
+        image['img'] = image['img'].reshape(1, size, size)
+        name = image['name']
+        print('Found {}.'.format(name))
     png = quadtorch.render_img(image['img'].reshape(size, size))
     display(png)
     try:

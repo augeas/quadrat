@@ -1,6 +1,9 @@
 # quadrat
 Sounds and moving pictures from quadratic difference equations.
 
+### TLDR: Click the button to make random pictures and noises on [mybinder.org](https://mybinder.org/).
+[![Make Noises](img/make_noises.png)](https://mybinder.org/v2/gh/augeas/quadrat/main?urlpath=https%3A%2F%2Fgithub.com%2Faugeas%2Fquadrat%2Fblob%2Fmain%2Fimage.ipynb)
+
 In 1993, J. C. Sprott published [Automatic Generation of Strange Attractors](https://sprott.physics.wisc.edu/pubs/PAPER203.HTM), where chaotic maps are produced by iterating a reccurrence relation given by a pair of coupled quadratic difference equations:
 
 $$
