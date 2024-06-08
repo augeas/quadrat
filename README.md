@@ -66,3 +66,6 @@ Then you can play with a basic UI made with [ipwidgets](https://ipywidgets.readt
 from quadrat.nb_app import SingleImageApp
 SingleImageApp(player=True).show()
 ```
+
+![SimpleImageApp](img/SDUUCQUXQXDK.png)
+
