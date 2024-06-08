@@ -20,7 +20,7 @@ $$
 $$
 
 $$
-\Large{P_{n+1} = \begin{bmatrix} x_{n}+1 \\ y_{n}+1 \end{bmatrix}, B =  \begin{bmatrix} a_{1} \\ a_{7} \end{bmatrix}}, C =  \left[ \begin{array}{ccccccc} a_{2} & a_{3} & a_{4} & a_{5} & a_{6} \\
+\Large{P_{n+1} = \begin{bmatrix} x_{n+1} \\ y_{n+1} \end{bmatrix}, B =  \begin{bmatrix} a_{1} \\ a_{7} \end{bmatrix}}, C =  \left[ \begin{array}{ccccccc} a_{2} & a_{3} & a_{4} & a_{5} & a_{6} \\
 a_{8} & a_{9} & a_{10} & a_{11} & a_{12} \end{array} \right]
 $$
 
@@ -48,3 +48,21 @@ overlapping hops, and then summed and normalized. This is repeated for a second 
 columns swapped.
 
 ### [This](SDUUCQUXQXDK.mp3) is what a `SDUUCQUXQXDK` sounds like.
+
+## Playing with the Code
+
+If you have [ffmpeg](https://ffmpeg.org/) you can play with different attractors, FFT sizes and hop sizes in
+a [Jupyter notebook](https://youtu.be/7jiPeIFXb6U?si=UT9EJb59Btl3enID):
+
+```bash
+pip install -r requirements.txt
+jupyter notebook --no-browser
+```
+
+Then you can play with a basic UI made with [ipwidgets](https://ipywidgets.readthedocs.io/en/latest/):
+(Unfortunately, this is a bit flakey on [mybinder.org](https://mybinder.org/).)
+
+```python
+from quadrat.nb_app import SingleImageApp
+SingleImageApp(player=True).show()
+```
