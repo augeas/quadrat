@@ -67,5 +67,5 @@ from quadrat.nb_app import SingleImageApp
 SingleImageApp(player=True).show()
 ```
 
-![SimpleImageApp](img/SDUUCQUXQXDK.png)
+![SimpleImageApp](img/image_app.png)
 
